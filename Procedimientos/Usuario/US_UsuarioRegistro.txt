@@ -1,0 +1,93 @@
+-- ================================================
+-- Template generated from Template Explorer using:
+-- Create Procedure (New Menu).SQL
+--
+-- Use the Specify Values for Template Parameters 
+-- command (Ctrl-Shift-M) to fill in the parameter 
+-- values below.
+--
+-- This block of comments will not be included in
+-- the definition of the procedure.
+-- ================================================
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+/*
+EXEC US_UsuarioRegistro 
+    @Username = 'jorafael',     -- Nombre de usuario
+    @Password = 'jorge123', -- Contraseña sin encriptar
+    @RolID = 7,                     -- ID del rol, por ejemplo, 1 para 'Cliente'
+    @Email = 'jalvaradoe3@gmail.com',    -- Correo electrónico del usuario
+    @Estado = 1;             -- Estado inicial
+*/
+
+
+ALTER PROCEDURE US_UsuarioRegistro
+    @Username NVARCHAR(50),
+    @Password NVARCHAR(50),  -- Contraseña sin encriptar, recibida del usuario
+    @RolID INT,
+    @Email NVARCHAR(100),
+    @Estado bit = 1  -- Estado inicial por defecto
+AS
+BEGIN
+    DECLARE @Salt VARBINARY(256);
+    DECLARE @PasswordHash VARBINARY(256);
+
+    -- Generar un salt aleatorio
+    SET @Salt = CONVERT(VARBINARY(256), NEWID());
+
+    -- Generar el hash de la contraseña usando el salt
+    SET @PasswordHash = HASHBYTES('SHA2_256', @Salt + CONVERT(VARBINARY(256), @Password));
+
+    -- Insertar el nuevo usuario en la tabla Usuarios
+    BEGIN TRY
+        INSERT INTO US_Usuarios (
+            Username,
+            PasswordHash,
+            Salt,
+            RolID,
+            Email,
+            FechaRegistro,
+            Estado,
+            IntentosFallidos,
+            Bloqueado
+        )
+        VALUES (
+            @Username,
+            @PasswordHash,
+            @Salt,
+            @RolID,
+            @Email,
+            GETDATE(),
+            @Estado,
+            0,          -- Intentos fallidos iniciales en 0
+            0           -- Cuenta no bloqueada al inicio
+        );
+
+        SELECT 1 as success, 'Registro exitoso' AS Mensaje;
+    END TRY
+    BEGIN CATCH
+         -- Capturar el error y registrar en la tabla de logs
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+
+        -- Insertar el error en la tabla de logs
+        INSERT INTO LogsErrores (FechaHora, Procedimiento, Mensaje, Severidad, Estado, UsuarioID, Detalle)
+        VALUES (GETDATE(), 'US_UsuarioRegistro', @ErrorMessage, @ErrorSeverity, @ErrorState, '', 
+                'Error al intentar crear un usuario');
+
+        -- Devolver el error como un resultado
+        SELECT 
+            0 AS success,
+            @ErrorMessage AS Mensaje,
+            @ErrorSeverity AS Severidad,
+            @ErrorState AS Estado;
+    END CATCH
+END;
