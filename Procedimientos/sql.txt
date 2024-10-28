@@ -54,3 +54,45 @@ CREATE TABLE Bloqueos (
     Motivo NVARCHAR(100) NULL,
     Estado NVARCHAR(50) NOT NULL
 );
+
+CREATE TABLE BDTICKETS.dbo.US_Roles (
+	ID int IDENTITY(1,1) NOT NULL,
+	Nombre nvarchar(20) COLLATE Modern_Spanish_CI_AS NOT NULL,
+	Descripcion nvarchar(255) COLLATE Modern_Spanish_CI_AS NULL,
+	Activo bit DEFAULT 1 NULL,
+	CONSTRAINT PK__US_Roles__3214EC278AFFD1DC PRIMARY KEY (ID),
+	CONSTRAINT UQ__US_Roles__75E3EFCFDEBC74BC UNIQUE (Nombre)
+);
+
+CREATE TABLE BDTICKETS.dbo.US_Usuarios (
+	ID int IDENTITY(1,1) NOT NULL,
+	Username nvarchar(50) COLLATE Modern_Spanish_CI_AS NOT NULL,
+	PasswordHash varbinary(256) NOT NULL,
+	Salt varbinary(256) NOT NULL,
+	RolID int NULL,
+	Email nvarchar(100) COLLATE Modern_Spanish_CI_AS NOT NULL,
+	FechaRegistro datetime DEFAULT getdate() NOT NULL,
+	Estado bit NOT NULL,
+	UltimoLogin datetime NULL,
+	IntentosFallidos int DEFAULT 0 NULL,
+	Bloqueado bit DEFAULT 0 NULL,
+	TokenRecuperacion nvarchar(256) COLLATE Modern_Spanish_CI_AS NULL,
+	FechaExpiracionToken datetime NULL,
+	CONSTRAINT PK__US_Usuar__3214EC27BDEAB95C PRIMARY KEY (ID),
+	CONSTRAINT UQ__US_Usuar__536C85E477E33E41 UNIQUE (Username),
+	CONSTRAINT UQ__US_Usuar__A9D10534BFD8ED7E UNIQUE (Email),
+	CONSTRAINT FK__US_Usuari__RolID__5535A963 FOREIGN KEY (RolID) REFERENCES BDTICKETS.dbo.US_Roles(ID)
+);
+
+
+CREATE TABLE BDTICKETS.dbo.LogsErrores (
+	ID int IDENTITY(1,1) NOT NULL,
+	FechaHora datetime DEFAULT getdate() NOT NULL,
+	Procedimiento nvarchar(100) COLLATE Modern_Spanish_CI_AS NULL,
+	Mensaje nvarchar(4000) COLLATE Modern_Spanish_CI_AS NULL,
+	Severidad int NULL,
+	Estado int NULL,
+	UsuarioID int NULL,
+	Detalle nvarchar(MAX) COLLATE Modern_Spanish_CI_AS NULL,
+	CONSTRAINT PK__LogsErro__3214EC27CE05A510 PRIMARY KEY (ID)
+);
