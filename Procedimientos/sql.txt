@@ -1,60 +1,3 @@
--- Tabla de Eventos
-CREATE TABLE Eventos (
-    ID INT PRIMARY KEY IDENTITY,
-    Nombre NVARCHAR(100) NOT NULL,
-    Descripcion TEXT NULL,
-    Fecha DATETIME NOT NULL,
-    Lugar NVARCHAR(100) NOT NULL,
-    CapacidadTotal INT NOT NULL,
-    Estado NVARCHAR(50) NOT NULL,
-    FechaCreacion DATETIME NOT NULL DEFAULT GETDATE(),
-    CreadoPor INT NOT NULL
-);
-
--- Tabla de Localidades
-CREATE TABLE Localidades (
-    ID INT PRIMARY KEY IDENTITY,
-    EventoID INT NOT NULL FOREIGN KEY REFERENCES Eventos(ID),
-    Nombre NVARCHAR(50) NOT NULL,
-    Capacidad INT NOT NULL,
-    Precio DECIMAL(10,2) NOT NULL,
-    EsNumerada BIT NOT NULL
-);
-
--- Tabla de Usuarios
-CREATE TABLE Usuarios (
-    ID INT PRIMARY KEY IDENTITY,
-    Username NVARCHAR(50) NOT NULL UNIQUE,
-    PasswordHash VARBINARY(256) NOT NULL,
-    Rol NVARCHAR(20) NOT NULL CHECK (Rol IN ('Cliente', 'Administrador')),
-    Email NVARCHAR(100) NOT NULL UNIQUE,
-    FechaRegistro DATETIME NOT NULL DEFAULT GETDATE(),
-    Estado NVARCHAR(50) NOT NULL
-);
-
--- Tabla de Reservas
-CREATE TABLE Reservas (
-    ID INT PRIMARY KEY IDENTITY,
-    UsuarioID INT NOT NULL FOREIGN KEY REFERENCES Usuarios(ID),
-    EventoID INT NOT NULL FOREIGN KEY REFERENCES Eventos(ID),
-    LocalidadID INT NOT NULL FOREIGN KEY REFERENCES Localidades(ID),
-    Cantidad INT NOT NULL,
-    FechaReserva DATETIME NOT NULL DEFAULT GETDATE(),
-    Estado NVARCHAR(50) NOT NULL
-);
-
--- Tabla de Bloqueos
-CREATE TABLE Bloqueos (
-    ID INT PRIMARY KEY IDENTITY,
-    LocalidadID INT NOT NULL FOREIGN KEY REFERENCES Localidades(ID),
-    Fila NVARCHAR(10) NULL,
-    Asiento NVARCHAR(10) NULL,
-    Cantidad INT NOT NULL,
-    FechaBloqueo DATETIME NOT NULL DEFAULT GETDATE(),
-    Motivo NVARCHAR(100) NULL,
-    Estado NVARCHAR(50) NOT NULL
-);
-
 CREATE TABLE BDTICKETS.dbo.US_Roles (
 	ID int IDENTITY(1,1) NOT NULL,
 	Nombre nvarchar(20) COLLATE Modern_Spanish_CI_AS NOT NULL,
@@ -95,4 +38,44 @@ CREATE TABLE BDTICKETS.dbo.LogsErrores (
 	UsuarioID int NULL,
 	Detalle nvarchar(MAX) COLLATE Modern_Spanish_CI_AS NULL,
 	CONSTRAINT PK__LogsErro__3214EC27CE05A510 PRIMARY KEY (ID)
+);
+
+CREATE TABLE EV_Eventos (
+    ID INT PRIMARY KEY IDENTITY,
+    ID_UNICO UNIQUEIDENTIFIER DEFAULT NEWID(),
+    CODIGO_EVENTO VARCHAR(50),
+    Nombre NVARCHAR(100) NOT NULL,
+    Descripcion TEXT NULL,
+    Fecha DATETIME NOT NULL,
+    Lugar NVARCHAR(100) NOT NULL,
+    Ciudad NVARCHAR(100) NOT NULL, -- Campo para la ciudad del evento
+    CapacidadTotal INT NOT NULL,
+    PrecioBase DECIMAL(10, 2) NULL,
+    Estado NVARCHAR(50) NOT NULL, -- Ej.: Activo, Cancelado, Postergado
+    FechaCreacion DATETIME NOT NULL DEFAULT GETDATE(),
+    CreadoPor INT NOT NULL,
+    ImagenURL NVARCHAR(255) NULL, -- URL de imagen o banner del evento
+    HoraInicio TIME NULL, -- Hora específica de inicio
+    HoraFin TIME NULL, -- Hora específica de fin
+    CategoriaID varchar(10), -- Clave foránea para categoría del evento
+    EsVisible BIT NOT NULL DEFAULT 1 -- Indica si el evento es visible para los usuarios
+);
+
+CREATE TABLE EV_Eventos_Imagenes (
+    ID INT PRIMARY KEY IDENTITY,
+    EventoID UNIQUEIDENTIFIER NOT NULL, -- Clave foránea a la tabla Eventos, vinculada con ID_UNICO
+    URL NVARCHAR(255) NOT NULL, -- Ruta o URL de la imagen
+    Descripcion NVARCHAR(255) NULL, -- Descripción opcional de la imagen
+    EsPrincipal BIT NOT NULL DEFAULT 0, -- Indica si la imagen es la principal para el evento
+    FechaCreacion DATETIME NOT NULL DEFAULT GETDATE(), -- Fecha en que se subió la imagen
+);
+
+
+CREATE TABLE EV_Categorias (
+    ID INT PRIMARY KEY IDENTITY,
+	CategoriaID as REPLACE(STR(ID,10),' ','0'),
+    Nombre NVARCHAR(100) NOT NULL UNIQUE, -- Nombre único de la categoría
+    Descripcion NVARCHAR(255) NULL, -- Descripción opcional de la categoría
+    FechaCreacion DATETIME NOT NULL DEFAULT GETDATE(), -- Fecha de creación de la categoría
+	Activo BIT default 1 not null
 );

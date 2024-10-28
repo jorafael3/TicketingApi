@@ -1,3 +1,4 @@
+using TicketingAPI.Services.Eventos;
 using TicketingAPI.Services.Logs;
 using TicketingAPI.Services.Usuarios;
 
@@ -15,6 +16,11 @@ builder.Services.AddScoped<AuthService>();
 
 // Si también necesitas LogService, agréguelo aquí
 builder.Services.AddScoped<LogService>();
+
+builder.Services.AddScoped<UserService>(); // O usa AddTransient o AddSingleton según el tiempo de vida necesario.
+builder.Services.AddScoped<CategoriasService>();
+builder.Services.AddScoped<EventosService>();
+
 
 var app = builder.Build();
 

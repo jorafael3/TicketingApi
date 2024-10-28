@@ -1,5 +1,37 @@
 [
   {
+    "ContainingType": "TicketingAPI.Controllers.Eventos.EventosController",
+    "Method": "CrearCategoria",
+    "RelativePath": "api/eventos/Eventos/CrearCategoria",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "categoria",
+        "Type": "TicketingAPI.Models.Eventos.Eventos.Categorias",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "TicketingAPI.Controllers.Eventos.EventosController",
+    "Method": "CrearEvento",
+    "RelativePath": "api/eventos/Eventos/CrearEvento",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "evento",
+        "Type": "TicketingAPI.Models.Eventos.Eventosc",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "TicketingAPI.Controllers.Usuarios.AuthController",
     "Method": "Login",
     "RelativePath": "api/usuarios/Auth/login",
@@ -46,26 +78,5 @@
       }
     ],
     "ReturnTypes": []
-  },
-  {
-    "ContainingType": "TicketingAPI.Controllers.WeatherForecastController",
-    "Method": "Get",
-    "RelativePath": "WeatherForecast",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": [
-      {
-        "Type": "System.Collections.Generic.IEnumerable\u00601[[TicketingAPI.WeatherForecast, TicketingAPI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]",
-        "MediaTypes": [
-          "text/plain",
-          "application/json",
-          "text/json"
-        ],
-        "StatusCode": 200
-      }
-    ],
-    "EndpointName": "GetWeatherForecast"
   }
 ]

@@ -1,0 +1,51 @@
+USE [BDTICKETS]
+GO
+/****** Object:  StoredProcedure [dbo].[spCrearEvento]    Script Date: 28/10/2024 17:56:09 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE [dbo].[EV_CrearEvento]
+    @CODIGO_EVENTO VARCHAR(50),
+    @Nombre NVARCHAR(100),
+    @Descripcion TEXT = NULL,
+    @Fecha DATETIME,
+    @Lugar NVARCHAR(100),
+    @Ciudad NVARCHAR(100),
+    @CapacidadTotal INT,
+    @PrecioBase DECIMAL(10, 2) = NULL,
+    @Estado NVARCHAR(50),
+    @CreadoPor INT,
+    @ImagenURL NVARCHAR(255) = NULL,
+    @HoraInicio TIME = NULL,
+    @HoraFin TIME = NULL,
+    @CategoriaID VARCHAR(10) = NULL,
+    @EsVisible BIT = 1,
+	@UsuarioID int
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+		INSERT INTO EV_Eventos (CODIGO_EVENTO, Nombre, Descripcion, Fecha, Lugar, Ciudad, CapacidadTotal, PrecioBase, Estado, FechaCreacion, CreadoPor, ImagenURL, HoraInicio, HoraFin, CategoriaID, EsVisible)
+		VALUES (@CODIGO_EVENTO, @Nombre, @Descripcion, @Fecha, @Lugar, @Ciudad, @CapacidadTotal, @PrecioBase, @Estado, GETDATE(), @CreadoPor, @ImagenURL, @HoraInicio, @HoraFin, @CategoriaID, @EsVisible);
+			SELECT 1 as success, 'Rol creado exitosamente' AS Mensaje;
+    END TRY
+	 BEGIN CATCH
+        -- Capturar cualquier error de inserción y devolver un mensaje de error
+         -- Capturar el error y devolver un mensaje detallado
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+
+		INSERT INTO LogsErrores (FechaHora, Procedimiento, Mensaje, Severidad, Estado, UsuarioID, Detalle)
+		VALUES (GETDATE(), 'US_CrearRol', @ErrorMessage, @ErrorSeverity, @ErrorState, @UsuarioID, 
+                'Error al intentar crear un rol');
+        -- Devolver el error como un resultado en lugar de usar RAISERROR
+        SELECT 
+            0 AS success,
+            @ErrorMessage AS Mensaje,
+            @ErrorSeverity AS Severidad,
+            @ErrorState AS Estado;
+        --RAISERROR(@ErrorMessage, 16, 1);
+    END CATCH
+END;

@@ -1,0 +1,56 @@
+-- ================================================
+-- Template generated from Template Explorer using:
+-- Create Procedure (New Menu).SQL
+--
+-- Use the Specify Values for Template Parameters 
+-- command (Ctrl-Shift-M) to fill in the parameter 
+-- values below.
+--
+-- This block of comments will not be included in
+-- the definition of the procedure.
+-- ================================================
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+CREATE PROCEDURE EV_Crear_Categorias
+@Nombre NVARCHAR(100),
+@Descripcion TEXT = NULL,
+@Activo BIT,
+@UsuarioID INT = NULL
+
+AS
+BEGIN
+	BEGIN TRY
+    
+		INSERT INTO EV_Categorias (Nombre, Descripcion, Activo, FechaCreacion)
+		VALUES (@Nombre, @Descripcion, @Activo, GETDATE());
+
+		SELECT 1 as success, 'Categoria creada exitosamente' AS Mensaje;
+	END TRY
+    BEGIN CATCH
+		 -- Capturar cualquier error de inserción y devolver un mensaje de error
+         -- Capturar el error y devolver un mensaje detallado
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+
+		INSERT INTO LogsErrores (FechaHora, Procedimiento, Mensaje, Severidad, Estado, UsuarioID, Detalle)
+		VALUES (GETDATE(), 'EV_Crear_Categorias', @ErrorMessage, @ErrorSeverity, @ErrorState, @UsuarioID, 
+                'Error al intentar crear una categoria');
+        -- Devolver el error como un resultado en lugar de usar RAISERROR
+        SELECT 
+            0 AS success,
+            @ErrorMessage AS Mensaje,
+            @ErrorSeverity AS Severidad,
+            @ErrorState AS Estado;
+        --RAISERROR(@ErrorMessage, 16, 1);
+	END CATCH
+
+END
+GO

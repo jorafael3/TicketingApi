@@ -34,6 +34,9 @@ namespace TicketingAPI.Controllers.Usuarios
             //  "Email": "ejemplo@correo.com",
             //  "Estado": true
             //}
+            if (user == null)
+                return BadRequest(new { success = false, mensaje = "Los datos del usuario no pueden ser nulos." });
+
             var (success, mensaje) = await _userService.RegistrarUsuario(user);
 
             if (success)
@@ -45,11 +48,14 @@ namespace TicketingAPI.Controllers.Usuarios
         [HttpPost("CrearRoles")]
         public async Task<IActionResult> CrearRoles([FromBody] Role role)
         {
-                //{
-                //"Nombre": "Moderador",
-                //  "Descripcion": "Gestiona contenido y usuarios",
-                //  "Activo": true
-                //}
+            //{
+            //"Nombre": "Moderador",
+            //  "Descripcion": "Gestiona contenido y usuarios",
+            //  "Activo": true
+            //}
+            if (role == null)
+                return BadRequest(new { success = false, mensaje = "Los datos del rol no pueden ser nulos." });
+
             var (success, mensaje) = await _userService.CrearRoles(role);
 
             if (success)
