@@ -1,0 +1,49 @@
+USE [BDTICKETS]
+GO
+/****** Object:  StoredProcedure [dbo].[US_CrearRol]    Script Date: 10/28/2024 1:46:44 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+-- exec US_CrearRol 'CLIENTE','CLIENTE',1
+
+
+
+ALTER PROCEDURE [dbo].[US_CrearRol]
+    @Nombre NVARCHAR(20),
+    @Descripcion NVARCHAR(255) = NULL,  -- Descripción opcional
+    @Activo BIT = 1,                   -- Estado inicial, por defecto activo (1)
+	@UsuarioID INT = NULL
+AS
+BEGIN
+    BEGIN TRY
+        -- Insertar el nuevo rol en la tabla Roles
+        INSERT INTO US_Roles (Nombre, Descripcion, Activo)
+        VALUES (@Nombre, @Descripcion, @Activo);
+
+        SELECT 1 as success, 'Rol creado exitosamente' AS Mensaje;
+    END TRY
+    BEGIN CATCH
+        -- Capturar cualquier error de inserción y devolver un mensaje de error
+         -- Capturar el error y devolver un mensaje detallado
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY();
+        DECLARE @ErrorState INT = ERROR_STATE();
+
+		INSERT INTO LogsErrores (FechaHora, Procedimiento, Mensaje, Severidad, Estado, UsuarioID, Detalle)
+		VALUES (GETDATE(), 'US_CrearRol', @ErrorMessage, @ErrorSeverity, @ErrorState, @UsuarioID, 
+                'Error al intentar crear un rol');
+        -- Devolver el error como un resultado en lugar de usar RAISERROR
+        SELECT 
+            0 AS success,
+            @ErrorMessage AS Mensaje,
+            @ErrorSeverity AS Severidad,
+            @ErrorState AS Estado;
+        --RAISERROR(@ErrorMessage, 16, 1);
+    END CATCH
+END;

@@ -1,0 +1,96 @@
+USE [BDTICKETS]
+GO
+/****** Object:  StoredProcedure [dbo].[US_UsuarioLogin]    Script Date: 10/28/2024 1:46:09 PM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		<Author,,Name>
+-- Create date: <Create Date,,>
+-- Description:	<Description,,>
+-- =============================================
+-- exec US_UsuarioLogin 'jorafael','jorge12'
+ALTER PROCEDURE [dbo].[US_UsuarioLogin]
+    @Username NVARCHAR(50),
+    @Password NVARCHAR(50)  -- Contraseña sin encriptar, recibida del usuario
+AS
+BEGIN
+    DECLARE @StoredPasswordHash VARBINARY(256);
+    DECLARE @StoredSalt VARBINARY(256);
+    DECLARE @ComputedHash VARBINARY(256);
+    DECLARE @UserID INT;
+    DECLARE @IntentosFallidos INT;
+    DECLARE @Bloqueado BIT;
+
+    -- Verificar si el usuario existe y obtener los datos relevantes
+    SELECT 
+        @UserID = ID,
+        @StoredPasswordHash = PasswordHash,
+        @StoredSalt = Salt,
+        @IntentosFallidos = IntentosFallidos,
+        @Bloqueado = Bloqueado
+    FROM US_Usuarios
+    WHERE Username = @Username;
+
+    -- Verificar si el usuario está bloqueado
+    IF @Bloqueado = 1
+    BEGIN
+        --RAISERROR('La cuenta está bloqueada. Por favor, contacta al administrador.', 16, 1);
+		SELECT 0 as success, 'La cuenta ha sido bloqueada por múltiples intentos fallidos. por favor cambie su contraseña' as Mensaje
+        RETURN;
+    END
+
+    -- Si el usuario existe, calcular el hash con el salt almacenado
+    IF @StoredSalt IS NOT NULL
+    BEGIN
+        SET @ComputedHash = HASHBYTES('SHA2_256', @StoredSalt + CONVERT(VARBINARY(256), @Password));
+
+        -- Verificar si el hash coincide con el almacenado
+        IF @ComputedHash = @StoredPasswordHash
+        BEGIN
+            -- Login exitoso, reiniciar intentos fallidos y actualizar último login
+            UPDATE US_Usuarios
+            SET IntentosFallidos = 0, UltimoLogin = GETDATE()
+            WHERE ID = @UserID;
+
+            SELECT 
+				1 as success, 'Login exitoso' AS Mensaje, 
+				@UserID AS UserID,
+				Username,
+				Email
+			FROM US_Usuarios
+			WHERE ID = @UserID;
+            RETURN;
+        END
+        ELSE
+        BEGIN
+            -- Incrementar el número de intentos fallidos
+            SET @IntentosFallidos = @IntentosFallidos + 1;
+            UPDATE US_Usuarios
+            SET IntentosFallidos = @IntentosFallidos
+            WHERE ID = @UserID;
+
+            -- Si el número de intentos fallidos supera el límite, bloquear la cuenta
+            IF @IntentosFallidos >= 3
+            BEGIN
+                UPDATE US_Usuarios
+                SET Bloqueado = 1
+                WHERE ID = @UserID;
+
+				SELECT 0 as success, 'La cuenta ha sido bloqueada por múltiples intentos fallidos.' as Mensaje
+                --RAISERROR('La cuenta ha sido bloqueada por múltiples intentos fallidos.', 16, 1);
+                RETURN;
+            END
+				SELECT 0 as success, 'Contraseña incorrecta.' as Mensaje
+				--RAISERROR('Contraseña incorrecta.', 16, 1);
+            RETURN;
+        END
+    END
+    ELSE
+    BEGIN
+		SELECT 0 as success, 'Usuario no encontrado.' as Mensaje
+        --RAISERROR('Usuario no encontrado.', 16, 1);
+        RETURN;
+    END
+END;
