@@ -1,0 +1,56 @@
+-- Tabla de Eventos
+CREATE TABLE Eventos (
+    ID INT PRIMARY KEY IDENTITY,
+    Nombre NVARCHAR(100) NOT NULL,
+    Descripcion TEXT NULL,
+    Fecha DATETIME NOT NULL,
+    Lugar NVARCHAR(100) NOT NULL,
+    CapacidadTotal INT NOT NULL,
+    Estado NVARCHAR(50) NOT NULL,
+    FechaCreacion DATETIME NOT NULL DEFAULT GETDATE(),
+    CreadoPor INT NOT NULL
+);
+
+-- Tabla de Localidades
+CREATE TABLE Localidades (
+    ID INT PRIMARY KEY IDENTITY,
+    EventoID INT NOT NULL FOREIGN KEY REFERENCES Eventos(ID),
+    Nombre NVARCHAR(50) NOT NULL,
+    Capacidad INT NOT NULL,
+    Precio DECIMAL(10,2) NOT NULL,
+    EsNumerada BIT NOT NULL
+);
+
+-- Tabla de Usuarios
+CREATE TABLE Usuarios (
+    ID INT PRIMARY KEY IDENTITY,
+    Username NVARCHAR(50) NOT NULL UNIQUE,
+    PasswordHash VARBINARY(256) NOT NULL,
+    Rol NVARCHAR(20) NOT NULL CHECK (Rol IN ('Cliente', 'Administrador')),
+    Email NVARCHAR(100) NOT NULL UNIQUE,
+    FechaRegistro DATETIME NOT NULL DEFAULT GETDATE(),
+    Estado NVARCHAR(50) NOT NULL
+);
+
+-- Tabla de Reservas
+CREATE TABLE Reservas (
+    ID INT PRIMARY KEY IDENTITY,
+    UsuarioID INT NOT NULL FOREIGN KEY REFERENCES Usuarios(ID),
+    EventoID INT NOT NULL FOREIGN KEY REFERENCES Eventos(ID),
+    LocalidadID INT NOT NULL FOREIGN KEY REFERENCES Localidades(ID),
+    Cantidad INT NOT NULL,
+    FechaReserva DATETIME NOT NULL DEFAULT GETDATE(),
+    Estado NVARCHAR(50) NOT NULL
+);
+
+-- Tabla de Bloqueos
+CREATE TABLE Bloqueos (
+    ID INT PRIMARY KEY IDENTITY,
+    LocalidadID INT NOT NULL FOREIGN KEY REFERENCES Localidades(ID),
+    Fila NVARCHAR(10) NULL,
+    Asiento NVARCHAR(10) NULL,
+    Cantidad INT NOT NULL,
+    FechaBloqueo DATETIME NOT NULL DEFAULT GETDATE(),
+    Motivo NVARCHAR(100) NULL,
+    Estado NVARCHAR(50) NOT NULL
+);
