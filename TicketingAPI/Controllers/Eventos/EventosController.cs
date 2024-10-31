@@ -42,5 +42,16 @@ namespace TicketingAPI.Controllers.Eventos
             else
                 return BadRequest(new { success, mensaje });
         }
+
+        [HttpPost("SubirImagenEvento")]
+        public async Task<IActionResult> SubirImagenEvento([FromBody] EventoImagen evento)
+        {
+            var (success, mensaje) = await _eventosService.GuardarImagenAsync(evento);
+
+            if (success)
+                return Ok(new { success, mensaje });
+            else
+                return BadRequest(new { success, mensaje });
+        }
     }
 }

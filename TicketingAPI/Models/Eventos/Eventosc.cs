@@ -2,7 +2,7 @@
 {
     public class Eventosc
     {
-        public string CODIGO_EVENTO { get; set; }
+        public string? CODIGO_EVENTO { get; set; }
         public string Nombre { get; set; }
         public string Descripcion { get; set; }
         public DateTime Fecha { get; set; }
