@@ -68,6 +68,7 @@ CREATE TABLE EV_Eventos_Imagenes (
     Descripcion NVARCHAR(255) NULL, -- Descripción opcional de la imagen
     EsPrincipal BIT NOT NULL DEFAULT 0, -- Indica si la imagen es la principal para el evento
     FechaCreacion DATETIME NOT NULL DEFAULT GETDATE(), -- Fecha en que se subió la imagen
+	Activo BIT NOT NULL DEFAULT 1, 
 );
 
 
